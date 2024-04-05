@@ -66,7 +66,7 @@ void merge_sort(int64_t *arr, size_t begin, size_t end, size_t threshold) {
     return;
   }
 
-  // recursively sort halves in parallel
+  // recursively sort halves in parallel:
 
   size_t mid = begin + size/2;
 
@@ -99,7 +99,7 @@ void merge_sort(int64_t *arr, size_t begin, size_t end, size_t threshold) {
     merge_sort(arr, mid, end, threshold);
     return 0;
   } 
-  
+
   // If the parent is running
   else {
     int wstatus_1;
@@ -110,19 +110,16 @@ void merge_sort(int64_t *arr, size_t begin, size_t end, size_t threshold) {
 
     // If waitpid failed, let the parent exit
     if (waitpid_out_1 == -1) {
-      fprintf(stderr, "Error: waitpid command failed.\n");
-      return 6;
+      fatal("Errora");
     }
 
     // If the subprocess did not exit normally
     if (!WIFEXITED(wstatus_1)) {
-      fprintf(stderr, "Error: subprocess did not exit normally.\n");
-      return 7;
+      fatal("Errora");
     }
     // If the subprocess exited with a non-zero exit code
     if (WEXITSTATUS(wstatus_1) != 0) {
-      fprintf(stderr, "Error: subprocess exited with non-zero exit code.\n");
-      return 7;
+      fatal("Errora");
     }
 
     // Wait for child 2
