@@ -57,13 +57,13 @@ void fatal(const char *msg) {
   exit(1);
 }
 
-void merge_sort(int64_t *arr, size_t begin, size_t end, size_t threshold) {
+int merge_sort(int64_t *arr, size_t begin, size_t end, size_t threshold) {
   assert(end >= begin);
   size_t size = end - begin;
 
   if (size <= threshold) {
     seq_sort(arr, begin, end);
-    return;
+    return 0;
   }
 
   // recursively sort halves in parallel:
@@ -108,18 +108,17 @@ void merge_sort(int64_t *arr, size_t begin, size_t end, size_t threshold) {
     // Wait for child 1
     int waitpid_out_1 = waitpid(sort_left, &wstatus_1, 0);
 
-    // If waitpid failed, let the parent exit
+    // If waitpid failed
     if (waitpid_out_1 == -1) {
-      fatal("Errora");
+      fatal("Error: waitpid failure.\n");
     }
-
     // If the subprocess did not exit normally
     if (!WIFEXITED(wstatus_1)) {
-      fatal("Errora");
+      fatal("Error: subprocess did not exit normally.\n");
     }
     // If the subprocess exited with a non-zero exit code
     if (WEXITSTATUS(wstatus_1) != 0) {
-      fatal("Errora");
+      fatal("Error: subprocess exited with a non-zero exit code.\n");
     }
 
     // Wait for child 2
