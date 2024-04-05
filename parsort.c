@@ -86,8 +86,10 @@ void merge_sort(int64_t *arr, size_t begin, size_t end, size_t threshold) {
   }
   //If the parent is running
   else {
+    int wstatus;
+
     // Wait for the child, then sort the right side of the array recursively
-    waitpid_out = waitpid(sort_left, NULL, WNOHANG|WUNTRACED);
+    waitpid_out = waitpid(sort_left, &wstatus, 0);
 
     // If waitpid fails
     if (waitpid_out == -1) {
