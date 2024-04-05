@@ -70,28 +70,36 @@ void merge_sort(int64_t *arr, size_t begin, size_t end, size_t threshold) {
 
   size_t mid = begin + size/2;
 
-  // Make a child to sort each side of the array
+  // Make a child to sort the left side of the array
   pid_t sort_left = fork();
-  pid_t sort_right = fork();
-
-  // If either fork attempt failed
-  if ((sort_left < 0) || (sort_right < 0)) {
+  // If the fork attempt failed
+  if (sort_left < 0) {
     fprintf(stderr, "Error: Failed to create child process.\n");
     return 4;
   }
+
+  // Make a child to sort the right side of the array
+  pid_t sort_right = fork();
+  // If the fork attempt failed
+  if (sort_right < 0) {
+    fprintf(stderr, "Error: Failed to create child process.\n");
+    return 4;
+  }
+
   // If the left_sort child is running
-  else if (sort_left == 0) {
+  if (sort_left == 0) {
     // sort the left side of the array recursively, then let the child pass
     merge_sort(arr, begin, mid, threshold);
     return 0;
   } 
+
   // If the right_sort child is running
   else if (sort_right == 0) {
     // sort the right side of the array recursively, then let the child pass
     merge_sort(arr, mid, end, threshold);
     return 0;
   } 
-
+  
   // If the parent is running
   else {
     int wstatus_1;
