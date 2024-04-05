@@ -100,41 +100,40 @@ int merge_sort(int64_t *arr, size_t begin, size_t end, size_t threshold) {
     return 0;
   } 
 
+  int wstatus_1;
+  int wstatus_2;
 
-    int wstatus_1;
-    int wstatus_2;
+  // Wait for child 1
+  int waitpid_out_1 = waitpid(sort_left, &wstatus_1, 0);
 
-    // Wait for child 1
-    int waitpid_out_1 = waitpid(sort_left, &wstatus_1, 0);
+  // If waitpid failed
+  if (waitpid_out_1 == -1) {
+    fatal("Error: waitpid failure.\n");
+  }
+  // If the subprocess did not exit normally
+  if (!WIFEXITED(wstatus_1)) {
+    fatal("Error: subprocess did not exit normally.\n");
+  }
+  // If the subprocess exited with a non-zero exit code
+  if (WEXITSTATUS(wstatus_1) != 0) {
+    fatal("Error: subprocess exited with a non-zero exit code.\n");
+  }
 
-    // If waitpid failed
-    if (waitpid_out_1 == -1) {
-      fatal("Error: waitpid failure.\n");
-    }
-    // If the subprocess did not exit normally
-    if (!WIFEXITED(wstatus_1)) {
-      fatal("Error: subprocess did not exit normally.\n");
-    }
-    // If the subprocess exited with a non-zero exit code
-    if (WEXITSTATUS(wstatus_1) != 0) {
-      fatal("Error: subprocess exited with a non-zero exit code.\n");
-    }
+  // Wait for child 2
+  int waitpid_out_2 = waitpid(sort_right, &wstatus_2, 0);
 
-    // Wait for child 2
-    int waitpid_out_2 = waitpid(sort_right, &wstatus_2, 0);
+  // If waitpid failed, let the parent exit
+  if (waitpid_out_2 == -1) {
+    fatal("Error: waitpid failure.\n");
+  }
 
-    // If waitpid failed, let the parent exit
-    if (waitpid_out_2 == -1) {
-      fatal("Error: waitpid failure.\n");
-    }
-
-    // If the subprocess did not exit normally
-    if (!WIFEXITED(wstatus_2)) {
-      fatal("Error: subprocess did not exit normally.\n");
-    }
-    // If the subprocess exited with a non-zero exit code
-    if (WEXITSTATUS(wstatus_2) != 0) {
-      fatal("Error: subprocess exited with a non-zero exit code.\n");
+  // If the subprocess did not exit normally
+  if (!WIFEXITED(wstatus_2)) {
+    fatal("Error: subprocess did not exit normally.\n");
+  }
+  // If the subprocess exited with a non-zero exit code
+  if (WEXITSTATUS(wstatus_2) != 0) {
+    fatal("Error: subprocess exited with a non-zero exit code.\n");
   }
   
   // allocate temp array now, so we can avoid unnecessary work
