@@ -182,7 +182,7 @@ int main(int argc, char **argv) {
   }
 
   // Sort the data
-  merge_sort(data, 0, file_size_in_bytes, threshold);
+  merge_sort(data, 0, (file_size_in_bytes / sizeof(int64_t)), threshold);
 
   // Unmap and close the file
   munmap(data, file_size_in_bytes);
