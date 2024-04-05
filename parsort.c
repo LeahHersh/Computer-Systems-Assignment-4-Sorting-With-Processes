@@ -174,7 +174,7 @@ int main(int argc, char **argv) {
 
   // Map the file into memory using mmap
   int64_t *data = mmap(NULL, file_size_in_bytes, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-  fclose(filename);
+  close(filename);
 
   if (data == MAP_FAILED) {
     fprintf(stderr, "Error: memory mapping failed.\n");
