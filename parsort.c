@@ -57,13 +57,13 @@ void fatal(const char *msg) {
   exit(1);
 }
 
-int merge_sort(int64_t *arr, size_t begin, size_t end, size_t threshold) {
+void merge_sort(int64_t *arr, size_t begin, size_t end, size_t threshold) {
   assert(end >= begin);
   size_t size = end - begin;
 
   if (size <= threshold) {
     seq_sort(arr, begin, end);
-    return 0;
+    exit(0);
   }
 
   // recursively sort halves in parallel:
@@ -75,29 +75,28 @@ int merge_sort(int64_t *arr, size_t begin, size_t end, size_t threshold) {
   // If the fork attempt failed
   if (sort_left < 0) {
     fprintf(stderr, "Error: Failed to create child process.\n");
-    return 4;
-  }
-
-  // Make a child to sort the right side of the array
-  pid_t sort_right = fork();
-  // If the fork attempt failed
-  if (sort_right < 0) {
-    fprintf(stderr, "Error: Failed to create child process.\n");
-    return 4;
+    exit(4);
   }
 
   // If the left_sort child is running
   if (sort_left == 0) {
     // sort the left side of the array recursively, then let the child pass
     merge_sort(arr, begin, mid, threshold);
-    return 0;
+    exit(0);
   } 
+
+  // Make a child to sort the right side of the array
+  pid_t sort_right = fork();
+  // If the fork attempt failed
+  if (sort_right < 0) {
+    fatal("Error: Failed to create child process.\n");
+  }
 
   // If the right_sort child is running
   else if (sort_right == 0) {
     // sort the right side of the array recursively, then let the child pass
     merge_sort(arr, mid, end, threshold);
-    return 0;
+    exit(0);
   } 
 
   int wstatus_1;
@@ -107,7 +106,7 @@ int merge_sort(int64_t *arr, size_t begin, size_t end, size_t threshold) {
   int waitpid_out_1 = waitpid(sort_left, &wstatus_1, 0);
 
   // If waitpid failed
-  if (waitpid_out_1 == -1) {
+  if (waitpid_out_1 != 0) {
     fatal("Error: waitpid failure.\n");
   }
   // If the subprocess did not exit normally
@@ -123,7 +122,7 @@ int merge_sort(int64_t *arr, size_t begin, size_t end, size_t threshold) {
   int waitpid_out_2 = waitpid(sort_right, &wstatus_2, 0);
 
   // If waitpid failed, let the parent exit
-  if (waitpid_out_2 == -1) {
+  if (waitpid_out_2 != 0) {
     fatal("Error: waitpid failure.\n");
   }
 
