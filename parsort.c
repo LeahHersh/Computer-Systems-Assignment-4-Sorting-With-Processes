@@ -69,35 +69,55 @@ void merge_sort(int64_t *arr, size_t begin, size_t end, size_t threshold) {
   // recursively sort halves in parallel
 
   size_t mid = begin + size/2;
-  int waitpid_out;
 
-  // Make a child sort the left side of the array
+  // Make a child to sort each side of the array
   pid_t sort_left = fork();
-  // If the fork attempt failed
-  if (sort_left < 0) {
+  pid_t sort_right = fork();
+
+  // If either fork attempt failed
+  if ((sort_left < 0) || (sort_right < 0)) {
     fprintf(stderr, "Error: Failed to create child process.\n");
     return 4;
   }
-  // If the child is running
+  // If the left_sort child is running
   else if (sort_left == 0) {
     // sort the left side of the array recursively, then let the child pass
     merge_sort(arr, begin, mid, threshold);
     return 0;
-  }
-  //If the parent is running
+  } 
+  // If the right_sort child is running
+  else if (sort_right == 0) {
+    // sort the right side of the array recursively, then let the child pass
+    merge_sort(arr, mid, end, threshold);
+    return 0;
+  } 
+
+  // If the parent is running
   else {
-    int wstatus;
+    int wstatus_1;
+    int wstatus_2;
 
-    // Wait for the child, then sort the right side of the array recursively
-    waitpid_out = waitpid(sort_left, &wstatus, 0);
+    // Wait for both children
+    int waitpid_out_1 = waitpid(sort_left, &wstatus_1, 0);
+    int waitpid_out_2 = waitpid(sort_right, &wstatus_2, 0);
 
-    // If waitpid fails
-    if (waitpid_out == -1) {
+    // If waitpid failed, let the parent exit?
+    if ((waitpid_out_1 == -1) || (waitpid_out_2 == -1)) {
       fprintf(stderr, "Error: waitpid command failed.\n");
-      return 5;
+      return 6;
     }
 
-    merge_sort(arr, mid, end, threshold);
+    // If either subprocess did not exit normally
+    if (!WIFEXITED(wstatus_1) || !WIFEXITED(wstatus_2)) {
+      fprintf(stderr, "Error: subprocess did not exit normally.\n");
+      return 7;
+    }
+    // If either process exited with a non-zero exit code
+    if ((WEXITSTATUS(wstatus_1) != 0) || (WEXITSTATUS(wstatus_2) != 0)) {
+      fprintf(stderr, "Error: subprocess exited with non-zero exit code.\n");
+      return 7;
+    }
+
   }
   
   // allocate temp array now, so we can avoid unnecessary work
@@ -152,12 +172,21 @@ int main(int argc, char **argv) {
   }
   size_t file_size_in_bytes = statbuf.st_size;
 
+  // Map the file into memory using mmap
+  int64_t *data = mmap(NULL, file_size_in_bytes, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+  fclose(filename);
 
-  // TODO: map the file into memory using mmap
+  if (data == MAP_FAILED) {
+    fprintf(stderr, "Error: memory mapping failed.\n");
+    return 5;
+  }
 
-  // TODO: sort the data!
+  // Sort the data
+  merge_sort(data, 0, file_size_in_bytes, threshold);
 
-  // TODO: unmap and close the file
+  // Unmap and close the file
+  munmap(data, file_size_in_bytes);
+  close(data);
 
-  // TODO: exit with a 0 exit code if sort was successful
+  return 0; // TODO- conditional?
 }
