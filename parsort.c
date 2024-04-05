@@ -97,27 +97,45 @@ void merge_sort(int64_t *arr, size_t begin, size_t end, size_t threshold) {
     int wstatus_1;
     int wstatus_2;
 
-    // Wait for both children
+    // Wait for child 1
     int waitpid_out_1 = waitpid(sort_left, &wstatus_1, 0);
-    int waitpid_out_2 = waitpid(sort_right, &wstatus_2, 0);
 
-    // If waitpid failed, let the parent exit?
-    if ((waitpid_out_1 == -1) || (waitpid_out_2 == -1)) {
+    // If waitpid failed, let the parent exit
+    if (waitpid_out_1 == -1) {
       fprintf(stderr, "Error: waitpid command failed.\n");
       return 6;
     }
 
-    // If either subprocess did not exit normally
-    if (!WIFEXITED(wstatus_1) || !WIFEXITED(wstatus_2)) {
+    // If the subprocess did not exit normally
+    if (!WIFEXITED(wstatus_1)) {
       fprintf(stderr, "Error: subprocess did not exit normally.\n");
       return 7;
     }
-    // If either process exited with a non-zero exit code
-    if ((WEXITSTATUS(wstatus_1) != 0) || (WEXITSTATUS(wstatus_2) != 0)) {
+    // If the subprocess exited with a non-zero exit code
+    if (WEXITSTATUS(wstatus_1) != 0) {
       fprintf(stderr, "Error: subprocess exited with non-zero exit code.\n");
       return 7;
     }
 
+    // Wait for child 2
+    int waitpid_out_2 = waitpid(sort_right, &wstatus_2, 0);
+
+    // If waitpid failed, let the parent exit
+    if (waitpid_out_2 == -1) {
+      fprintf(stderr, "Error: waitpid command failed.\n");
+      return 6;
+    }
+
+    // If the subprocess did not exit normally
+    if (!WIFEXITED(wstatus_2)) {
+      fprintf(stderr, "Error: subprocess did not exit normally.\n");
+      return 7;
+    }
+    // If the subprocess exited with a non-zero exit code
+    if (WEXITSTATUS(wstatus_2) != 0) {
+      fprintf(stderr, "Error: subprocess exited with non-zero exit code.\n");
+      return 7;
+    }
   }
   
   // allocate temp array now, so we can avoid unnecessary work
