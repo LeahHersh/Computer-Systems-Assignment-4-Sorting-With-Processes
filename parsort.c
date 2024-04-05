@@ -100,8 +100,7 @@ int merge_sort(int64_t *arr, size_t begin, size_t end, size_t threshold) {
     return 0;
   } 
 
-  // If the parent is running
-  else {
+
     int wstatus_1;
     int wstatus_2;
 
@@ -139,7 +138,7 @@ int merge_sort(int64_t *arr, size_t begin, size_t end, size_t threshold) {
     if (WEXITSTATUS(wstatus_2) != 0) {
       fprintf(stderr, "Error: subprocess exited with non-zero exit code.\n");
       return 7;
-    }
+    
   }
   
   // allocate temp array now, so we can avoid unnecessary work
