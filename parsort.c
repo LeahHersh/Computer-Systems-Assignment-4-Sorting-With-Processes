@@ -23,6 +23,22 @@ void seq_sort(int64_t *arr, size_t begin, size_t end) {
   qsort(arr + begin, num_elements, sizeof(int64_t), compare_i64);
 }
 
+void process_waitpid_output(int waitpid_out, int wstatus) {
+  // If waitpid failed
+  if (waitpid_out == -1) {
+    fatal("waitpid failure.\n");
+  }
+
+  // If the subprocess did not exit normally
+  if (!WIFEXITED(wstatus)) {
+    fatal("subprocess did not exit normally.\n");
+  }
+  // If the subprocess exited with a non-zero exit code
+  if (WEXITSTATUS(wstatus) != 0) {
+    fatal("subprocess exited with a non-zero exit code.\n");
+  }
+}
+
 // Merge the elements in the sorted ranges [begin, mid) and [mid, end),
 // copying the result into temparr.
 void merge(int64_t *arr, size_t begin, size_t mid, size_t end, int64_t *temparr) {
@@ -98,43 +114,18 @@ void merge_sort(int64_t *arr, size_t begin, size_t end, size_t threshold) {
     exit(0);
   } 
 
+  // If the parent is running
   else {
+    int wstatus_1;
+    int wstatus_2;
 
-  int wstatus_1;
-  int wstatus_2;
+    // Wait for child 1
+    int waitpid_out_1 = waitpid(sort_left, &wstatus_1, 0);
+    process_waitpid_output(waitpid_out_1, wstatus_1);
 
-  // Wait for child 1
-  int waitpid_out_1 = waitpid(sort_left, &wstatus_1, 0);
-
-  // If waitpid failed
-  if (waitpid_out_1 == -1) {
-    fatal("waitpid failure.\n");
-  }
-  // If the subprocess did not exit normally
-  if (!WIFEXITED(wstatus_1)) {
-    fatal("subprocess did not exit normally.\n");
-  }
-  // If the subprocess exited with a non-zero exit code
-  if (WEXITSTATUS(wstatus_1) != 0) {
-    fatal("subprocess exited with a non-zero exit code.\n");
-  }
-
-  // Wait for child 2
-  int waitpid_out_2 = waitpid(sort_right, &wstatus_2, 0);
-
-  // If waitpid failed, let the parent exit
-  if (waitpid_out_2 == -1) {
-    fatal("waitpid failure.\n");
-  }
-
-  // If the subprocess did not exit normally
-  if (!WIFEXITED(wstatus_2)) {
-    fatal("subprocess did not exit normally.\n");
-  }
-  // If the subprocess exited with a non-zero exit code
-  if (WEXITSTATUS(wstatus_2) != 0) {
-    fatal("subprocess exited with a non-zero exit code.\n");
-  }
+    // Wait for child 2
+    int waitpid_out_2 = waitpid(sort_right, &wstatus_2, 0);
+    process_waitpid_output(waitpid_out_2, wstatus_2);
   }
   
   // allocate temp array now, so we can avoid unnecessary work
