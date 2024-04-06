@@ -98,6 +98,8 @@ void merge_sort(int64_t *arr, size_t begin, size_t end, size_t threshold) {
     exit(0);
   } 
 
+  else {
+
   int wstatus_1;
   int wstatus_2;
 
@@ -133,6 +135,7 @@ void merge_sort(int64_t *arr, size_t begin, size_t end, size_t threshold) {
   if (WEXITSTATUS(wstatus_2) != 0) {
     fatal("subprocess exited with a non-zero exit code.\n");
   }
+  }
   
   // allocate temp array now, so we can avoid unnecessary work
   // if the malloc fails
@@ -154,6 +157,7 @@ void merge_sort(int64_t *arr, size_t begin, size_t end, size_t threshold) {
   // success!
 }
 
+
 int main(int argc, char **argv) {
   // check for correct number of command line arguments
   if (argc != 3) {
@@ -169,13 +173,13 @@ int main(int argc, char **argv) {
     fatal("invalid threshold value.\n");
   }
 
-  // Open the file
+  // open the file
   int fd = open(filename, O_RDWR);
   if (fd < 0) {
     fatal("file did not open.\n");
   }
 
-  // Use fstat to determine the size of the file
+  // use fstat to determine the size of the file
   struct stat statbuf;
   int rc = fstat(fd, &statbuf);
   if (rc != 0) {
