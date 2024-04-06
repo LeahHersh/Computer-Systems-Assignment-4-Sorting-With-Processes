@@ -107,7 +107,7 @@ void merge_sort(int64_t *arr, size_t begin, size_t end, size_t threshold) {
   int waitpid_out_1 = waitpid(sort_left, &wstatus_1, 0);
 
   // If waitpid failed
-  if (waitpid_out_1 != 0) {
+  if (waitpid_out_1 == -1) {
     fatal("waitpid failure.\n");
   }
   // If the subprocess did not exit normally
@@ -123,7 +123,7 @@ void merge_sort(int64_t *arr, size_t begin, size_t end, size_t threshold) {
   int waitpid_out_2 = waitpid(sort_right, &wstatus_2, 0);
 
   // If waitpid failed, let the parent exit
-  if (waitpid_out_2 != 0) {
+  if (waitpid_out_2 == -1) {
     fatal("waitpid failure.\n");
   }
 
