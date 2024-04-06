@@ -74,13 +74,12 @@ void merge_sort(int64_t *arr, size_t begin, size_t end, size_t threshold) {
   pid_t sort_left = fork();
   // If the fork attempt failed
   if (sort_left < 0) {
-    fprintf(stderr, "Error: Failed to create child process.\n");
-    exit(4);
+    fatal("failed to create child process.\n");
   }
 
   // If the left_sort child is running
   if (sort_left == 0) {
-    // sort the left side of the array recursively, then let the child pass
+    // sort the left side of the array recursively, then have the child exit
     merge_sort(arr, begin, mid, threshold);
     exit(0);
   } 
@@ -89,12 +88,12 @@ void merge_sort(int64_t *arr, size_t begin, size_t end, size_t threshold) {
   pid_t sort_right = fork();
   // If the fork attempt failed
   if (sort_right < 0) {
-    fatal("Error: Failed to create child process.\n");
+    fatal("failed to create child process.\n");
   }
 
   // If the right_sort child is running
   else if (sort_right == 0) {
-    // sort the right side of the array recursively, then let the child pass
+    // sort the right side of the array recursively, then have the child exit
     merge_sort(arr, mid, end, threshold);
     exit(0);
   } 
@@ -107,15 +106,15 @@ void merge_sort(int64_t *arr, size_t begin, size_t end, size_t threshold) {
 
   // If waitpid failed
   if (waitpid_out_1 != 0) {
-    fatal("Error: waitpid failure.\n");
+    fatal("waitpid failure.\n");
   }
   // If the subprocess did not exit normally
   if (!WIFEXITED(wstatus_1)) {
-    fatal("Error: subprocess did not exit normally.\n");
+    fatal("subprocess did not exit normally.\n");
   }
   // If the subprocess exited with a non-zero exit code
   if (WEXITSTATUS(wstatus_1) != 0) {
-    fatal("Error: subprocess exited with a non-zero exit code.\n");
+    fatal("subprocess exited with a non-zero exit code.\n");
   }
 
   // Wait for child 2
@@ -123,16 +122,16 @@ void merge_sort(int64_t *arr, size_t begin, size_t end, size_t threshold) {
 
   // If waitpid failed, let the parent exit
   if (waitpid_out_2 != 0) {
-    fatal("Error: waitpid failure.\n");
+    fatal("waitpid failure.\n");
   }
 
   // If the subprocess did not exit normally
   if (!WIFEXITED(wstatus_2)) {
-    fatal("Error: subprocess did not exit normally.\n");
+    fatal("subprocess did not exit normally.\n");
   }
   // If the subprocess exited with a non-zero exit code
   if (WEXITSTATUS(wstatus_2) != 0) {
-    fatal("Error: subprocess exited with a non-zero exit code.\n");
+    fatal("subprocess exited with a non-zero exit code.\n");
   }
   
   // allocate temp array now, so we can avoid unnecessary work
@@ -167,23 +166,20 @@ int main(int argc, char **argv) {
   char *end;
   size_t threshold = (size_t) strtoul(argv[2], &end, 10);
   if (end != argv[2] + strlen(argv[2])) {
-    fprintf(stderr, "Error: Invalid threshold value.\n");
-    return 2;
+    fatal("invalid threshold value.\n");
   }
 
   // Open the file
   int fd = open(filename, O_RDWR);
   if (fd < 0) {
-    fprintf(stderr, "Error: file did not open.\n");
-    return 3;
+    fatal("file did not open.\n");
   }
 
   // Use fstat to determine the size of the file
   struct stat statbuf;
   int rc = fstat(fd, &statbuf);
   if (rc != 0) {
-    fprintf(stderr, "Error: failed to gain file's status information.\n");
-    return 4;
+    fatal("failed to gain file's status information.\n");
   }
   size_t file_size_in_bytes = statbuf.st_size;
 
@@ -192,8 +188,7 @@ int main(int argc, char **argv) {
   close(filename);
 
   if (data == MAP_FAILED) {
-    fprintf(stderr, "Error: memory mapping failed.\n");
-    return 5;
+    fatal("memory mapping failed.\n");
   }
 
   // Sort the data
@@ -203,5 +198,5 @@ int main(int argc, char **argv) {
   munmap(data, file_size_in_bytes);
   close(data);
 
-  return 0; // TODO- conditional?
+  return 0; 
 }
