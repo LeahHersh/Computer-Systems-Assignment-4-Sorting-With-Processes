@@ -23,22 +23,6 @@ void seq_sort(int64_t *arr, size_t begin, size_t end) {
   qsort(arr + begin, num_elements, sizeof(int64_t), compare_i64);
 }
 
-void process_waitpid_output(int waitpid_out, int wstatus) {
-  // If waitpid failed
-  if (waitpid_out == -1) {
-    fatal("waitpid failure.\n");
-  }
-
-  // If the subprocess did not exit normally
-  if (!WIFEXITED(wstatus)) {
-    fatal("subprocess did not exit normally.\n");
-  }
-  // If the subprocess exited with a non-zero exit code
-  if (WEXITSTATUS(wstatus) != 0) {
-    fatal("subprocess exited with a non-zero exit code.\n");
-  }
-}
-
 // Merge the elements in the sorted ranges [begin, mid) and [mid, end),
 // copying the result into temparr.
 void merge(int64_t *arr, size_t begin, size_t mid, size_t end, int64_t *temparr) {
@@ -71,6 +55,22 @@ void fatal(const char *msg) __attribute__ ((noreturn));
 void fatal(const char *msg) {
   fprintf(stderr, "Error: %s\n", msg);
   exit(1);
+}
+
+void process_waitpid_output(int waitpid_out, int wstatus) {
+  // If waitpid failed
+  if (waitpid_out == -1) {
+    fatal("waitpid failure.\n");
+  }
+
+  // If the subprocess did not exit normally
+  if (!WIFEXITED(wstatus)) {
+    fatal("subprocess did not exit normally.\n");
+  }
+  // If the subprocess exited with a non-zero exit code
+  if (WEXITSTATUS(wstatus) != 0) {
+    fatal("subprocess exited with a non-zero exit code.\n");
+  }
 }
 
 void merge_sort(int64_t *arr, size_t begin, size_t end, size_t threshold) {
@@ -180,7 +180,7 @@ int main(int argc, char **argv) {
 
   // Map the file into memory using mmap
   int64_t *data = mmap(NULL, file_size_in_bytes, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-  close(filename);
+  close(*filename);
 
   if (data == MAP_FAILED) {
     fatal("memory mapping failed.\n");
@@ -191,7 +191,7 @@ int main(int argc, char **argv) {
 
   // Unmap and close the file
   munmap(data, file_size_in_bytes);
-  close(data);
+  close(*data);
 
   return 0; 
 }
