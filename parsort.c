@@ -180,7 +180,7 @@ int main(int argc, char **argv) {
 
   // Map the file into memory using mmap
   int64_t *data = mmap(NULL, file_size_in_bytes, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-  close(*filename);
+  close(filename);
 
   if (data == MAP_FAILED) {
     fatal("memory mapping failed.\n");
@@ -191,7 +191,7 @@ int main(int argc, char **argv) {
 
   // Unmap and close the file
   munmap(data, file_size_in_bytes);
-  close(*data);
+  close(data);
 
   return 0; 
 }
