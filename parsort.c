@@ -191,7 +191,7 @@ int main(int argc, char **argv) {
 
   // Unmap and close the file
   munmap(data, file_size_in_bytes);
-  close(data);
+  close(fd);
 
   return 0; 
 }
